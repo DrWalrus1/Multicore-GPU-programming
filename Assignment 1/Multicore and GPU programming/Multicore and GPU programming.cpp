@@ -29,7 +29,6 @@ int main(void)
 	cl::Context context;					// context for the device
 	std::vector<cl::Device> contextDevices;	// devices in the context
 	std::string outputString;				// string for output
-
 	unsigned int i;							// counters
 
 
@@ -39,9 +38,46 @@ int main(void)
 			// if no device selected
 			quit_program("Device not selected.");
 		}
+		std::cout << std::endl;
+		std::cout << "--------------------" << std::endl;
 
+		//Platform Name
+		platform.getInfo(CL_PLATFORM_NAME, &outputString);
+		std::cout << "Platform Selected: " << outputString << std::endl;
+
+		//Device Type
+		cl_device_type type;
+		device.getInfo(CL_DEVICE_TYPE, &type);
+		if (type == CL_DEVICE_TYPE_CPU)
+			std::cout << "\tType: " << "CPU" << std::endl;
+		else if (type == CL_DEVICE_TYPE_GPU)
+			std::cout << "\tType: " << "GPU" << std::endl;
+
+		//Device Name
+		outputString = device.getInfo<CL_DEVICE_NAME>();
+		std::cout << "\tName: " << outputString << std::endl;
+
+		//Compute Units
+		std::cout << "\tCompute units: " << device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
+
+		//Work Group Size
+		std::cout << "\tWork group size: " << device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
+
+		//Work Group Size
+		std::cout << "\tWork item sizes: " << device.getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>()[0] << std::endl;
+
+		//Work Group Size
+		std::cout << "\tGlobal memory size: " << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() << std::endl;
+
+		//Device Extensions
+		std::cout << "\tDevice supports cl_khr_icd extension: ";
+		if (device.getInfo<CL_DEVICE_EXTENSIONS>().find("cl_khr_icd")) {
+			#pragma OPENCL EXTENSION cl_khr_icd : enable
+			std::cout << "true" << std::endl;
+		} else {
+			std::cout << "false" << std::endl;
+		}
 		context = cl::Context(device);
-
 		// get devices from the context
 		contextDevices = context.getInfo<CL_CONTEXT_DEVICES>();
 
@@ -78,11 +114,12 @@ int main(void)
 
 		std::cout << "--------------------" << std::endl;
 		std::cout << "Kernel names" << std::endl;
+		std::cout << "Total kernal count: " << allKernels.size() << std::endl;
 
 		// output kernel name for each index
 		for (i = 0; i < allKernels.size(); i++) {
 			outputString = allKernels[i].getInfo<CL_KERNEL_FUNCTION_NAME>();
-			std::cout << "Kernel " << i << ": " << outputString << std::endl;
+			std::cout << "\tKernel " << i << ": " << outputString << std::endl;
 		}
 
 		std::cout << "--------------------" << std::endl;
@@ -103,24 +140,44 @@ int main(void)
 
 bool select_one_device(cl::Platform* platfm, cl::Device* dev)
 {
-	std::vector<cl::Platform> platforms;	// available platforms
+	std::vector<cl::Platform> allplatforms; // all available platforms
+	std::vector<cl::Platform> platforms;	// available platforms that match user choice
 	std::vector< std::vector<cl::Device> > platformDevices;	// devices available for each platform
 	std::string outputString;				// string for output
 	unsigned int i, j;						// counters
 
 	try {
+		std::string type;
+		//Select type of device
+		std::cout << "Please select type of device (CPU/GPU): ";
+		std::getline(std::cin, type);
+		if (!(type.find("CPU") != std::string::npos) || !(type.find("GPU") != std::string::npos)) {
+			std::cout << "Incorrect device type selected. Ending..." << std::endl;
+			return false;
+		}
 		// get the number of available OpenCL platforms
-		cl::Platform::get(&platforms);
-		std::cout << "Number of OpenCL platforms: " << platforms.size() << std::endl;
+		cl::Platform::get(&allplatforms);
+		std::cout << "Number of OpenCL platforms: " << allplatforms.size() << std::endl;
 
 		// find and store the devices available to each platform
-		for (i = 0; i < platforms.size(); i++)
+		for (i = 0; i < allplatforms.size(); i++)
 		{
 			std::vector<cl::Device> devices;		// available devices
 
 			// get all devices available to the platform
-			platforms[i].getDevices(CL_DEVICE_TYPE_ALL, &devices);
-
+			try {
+				if (type == "CPU") {
+					allplatforms[i].getDevices(CL_DEVICE_TYPE_CPU, &devices);
+					platforms.push_back(allplatforms[i]);
+				}
+				else if (type == "GPU") {
+					allplatforms[i].getDevices(CL_DEVICE_TYPE_GPU, &devices);
+					platforms.push_back(allplatforms[i]);
+				}
+			}
+			catch (cl::Error e) {
+					continue;
+				}
 			// store available devices for the platform
 			platformDevices.push_back(devices);
 		}

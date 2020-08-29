@@ -29,8 +29,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{3C72A1D8-542B-4DAA-AC9D-A953B687FB61}</ProjectGuid>
-    <RootNamespace>Tutorial</RootNamespace>
+    <ProjectGuid>{3F44BA0C-232F-42F4-A7A2-CEA217841BE8}</ProjectGuid>
+    <RootNamespace>Lab2B</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

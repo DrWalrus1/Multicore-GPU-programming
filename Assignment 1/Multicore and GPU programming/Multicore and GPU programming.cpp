@@ -150,11 +150,13 @@ bool select_one_device(cl::Platform* platfm, cl::Device* dev)
 		std::string type;
 		//Select type of device
 		std::cout << "Please select type of device (CPU/GPU): ";
-		std::getline(std::cin, type);
-		if (!(type.find("CPU") != std::string::npos) || !(type.find("GPU") != std::string::npos)) {
+		std::cin >> type;
+		std::cin.ignore();
+		if (!(type == "CPU" || type == "GPU")) {
 			std::cout << "Incorrect device type selected. Ending..." << std::endl;
 			return false;
 		}
+		
 		// get the number of available OpenCL platforms
 		cl::Platform::get(&allplatforms);
 		std::cout << "Number of OpenCL platforms: " << allplatforms.size() << std::endl;

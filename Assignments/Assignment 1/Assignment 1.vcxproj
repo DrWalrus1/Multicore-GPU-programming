@@ -145,7 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Multicore and GPU programming.cpp" />
+    <ClCompile Include="Assignment 1.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="error.h" />

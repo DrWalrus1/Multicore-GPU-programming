@@ -64,7 +64,11 @@ int main(void)
 		std::cout << "\tWork group size: " << device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
 
 		//Work Group Size
-		std::cout << "\tWork item sizes: " << device.getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>()[0] << std::endl;
+		std::cout << "\tWork item sizes: " << std::endl;
+		
+		for (int i = 0; i < device.getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>().size(); i++) {
+			std::cout << "\t\tItem " << i << ": " << device.getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>()[i] << std::endl;
+		}
 
 		//Work Group Size
 		std::cout << "\tGlobal memory size: " << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() << std::endl;
@@ -100,6 +104,17 @@ int main(void)
 		// build the program for the devices in the context
 		program.build(contextDevices);
 
+		std::cout << "--------------------" << std::endl;
+		std::cout << "Build Status: ";
+		if (program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(device) == CL_BUILD_ERROR) {
+			std::cout << program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(device) << std::endl;
+
+			return 1;
+		}
+		else if (program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(device) == CL_BUILD_SUCCESS){
+			std::cout << "Success" << std::endl;
+		}
+
 		// create individual kernels
 		cl::Kernel copyKernel(program, "copy");
 		cl::Kernel addKernel(program, "add");
@@ -121,7 +136,10 @@ int main(void)
 			outputString = allKernels[i].getInfo<CL_KERNEL_FUNCTION_NAME>();
 			std::cout << "\tKernel " << i << ": " << outputString << std::endl;
 		}
-
+		std::string log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
+		std::cout << "--------------------" << std::endl;
+		std::cout << "Build Log: " << std::endl;
+		std::cout << log << std::endl;
 		std::cout << "--------------------" << std::endl;
 	}
 	catch (cl::Error e) {

@@ -70,6 +70,8 @@ int main(void)
 			std::cout << "\t\tItem " << i << ": " << device.getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>()[i] << std::endl;
 		}
 
+		std::cout << "\tMax Compute Units: " << device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
+
 		//Work Group Size
 		std::cout << "\tGlobal memory size: " << device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>() << std::endl;
 

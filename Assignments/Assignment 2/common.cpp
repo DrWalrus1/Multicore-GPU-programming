@@ -385,8 +385,10 @@ void task2B(cl::Program* program, cl::Context* context, cl::Device* device, std:
 	}*/
 
 	fileContents = ReadFile(filename);
-	const char* charArray = fileContents.c_str();
-	std::vector<cl_char> charOutput(sizeof(fileContents));
+	std::vector<cl_char> charArray(fileContents.length());
+	std::copy(fileContents.begin(), fileContents.end(), charArray.begin());
+	std::vector<cl_char> charOutput(512);
+
 
 	cl::Kernel kernel = cl::Kernel(*program, "CeaserShift");
 
@@ -394,22 +396,30 @@ void task2B(cl::Program* program, cl::Context* context, cl::Device* device, std:
 	cl::CommandQueue queue = cl::CommandQueue(*context, *device);
 
 	// Buffers
-	cl::Buffer inputBuffer = cl::Buffer(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_char), &charArray);
-	cl::Buffer outputBuffer = cl::Buffer(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(charArray), &charOutput[0]);
+	cl::Buffer inputBuffer = cl::Buffer(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(charArray), &charArray[0]);
+	cl::Buffer outputBuffer = cl::Buffer(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_char) * charOutput.size(), &charOutput[0]);
 
 	// set kernel arguments
 	kernel.setArg(0, inputBuffer);
 	kernel.setArg(1, outputBuffer);
 
 	// enqueue kernel for execution
-	cl::NDRange offset(OFFSET);
-	cl::NDRange globalSize(GLOBAL_SIZE);
-	cl::NDRange localSize(LOCAL_SIZE);
+	cl::NDRange offset(0);
+	cl::NDRange globalSize(16);
+	cl::NDRange localSize(1);
 
 	queue.enqueueNDRangeKernel(kernel, offset, globalSize, localSize);
 
 	std::cout << "Kernel enqueued." << std::endl;
 	std::cout << "--------------------" << std::endl;
+
+	// enqueue command to read from device to host memory
+	queue.enqueueReadBuffer(outputBuffer, CL_TRUE, 0, sizeof(cl_char) * charOutput.size(), &charOutput[0]);
+
+	for (int i = 0; i < 32; i++) {
+		std::cout << i << ": Original item: " << charArray[i] << ". Output array item " << ": " << charOutput[i] << std::endl;
+	}
+	
 }
 // function to lookup and return error code string
 const std::string lookup_error_code(cl_int error_code)

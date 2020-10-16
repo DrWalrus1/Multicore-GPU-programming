@@ -158,6 +158,7 @@
     <Text Include="cipher.txt" />
     <Text Include="decrypt.txt" />
     <Text Include="plaintext.txt" />
+    <Text Include="test.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

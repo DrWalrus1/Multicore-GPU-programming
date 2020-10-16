@@ -14,17 +14,39 @@ __kernel void task1b(__global int4* vec1, __global int* vec2, __global int* outp
     
 }
 
-__kernel void CeaserShift(__global char* charArray, __global char16* outputArray) {
+__kernel void CeaserShift(__global char* charArray, __global char* outputArray, __global int *shift) {
     int global_id = get_global_id(0);
     int offset = get_global_offset(0);
-
-    int index = (global_id - offset);
-    char16 msg = (char16)(charArray[index], charArray[index+1], charArray[index+2], charArray[index+3], charArray[index+4],
-        charArray[index+5], charArray[index+6], charArray[index+7], charArray[index+8], charArray[index+9], charArray[index+10], charArray[index+11],
-        charArray[index+12], charArray[index+13], charArray[index+14], charArray[index+15]);
-
-    msg += 5;
-
-    *outputArray = msg;
     
+    int index = (global_id - offset);
+    
+    int Apos = 65, Zpos = 90;
+    char current = charArray[index];
+    int remainingShift = *shift;
+    //If not A-Z
+    if ((int)current > Zpos || (int)current < Apos) {
+        outputArray[index] = current;
+    }
+    else {
+        while (remainingShift != 0) {
+            if (((int)current + remainingShift) <= Zpos && ((int)current + remainingShift) >= Apos) {
+                outputArray[index] = (char)((int)current + remainingShift);
+                remainingShift = 0;
+                
+            } else if (((int)current + remainingShift) > Zpos) {
+                int difference = Zpos - (int)current;
+                current = Apos - 1;
+                remainingShift = remainingShift - difference;
+                
+            } else if (((int)current + remainingShift) < Apos) {
+                int difference = (int)current - Apos;
+                current = Zpos + 1;
+                remainingShift = remainingShift + difference;
+            }
+            else {
+                outputArray[index] = (char)((int)current + *shift);
+                remainingShift = 0;
+            }
+        }
+    }
 }

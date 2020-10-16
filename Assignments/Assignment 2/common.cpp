@@ -338,8 +338,11 @@ std::string CeaserShift(std::string text, int shift) {
 			continue;
 		}
 		while (remainingShift != 0) {
-			//Adding
-			if (((int)current + shift) > Zpos) {
+			if (((int)current + remainingShift) <= Zpos && ((int)current + remainingShift) >= Apos) {
+				text[i] = (char)((int)current + remainingShift);
+				remainingShift = 0;
+
+			} else if (((int)current + shift) > Zpos) {
 				int difference = Zpos - (int)current;
 				current = Apos - 1;
 				remainingShift = remainingShift - difference;
@@ -378,35 +381,37 @@ bool CompareFileContents(std::string fileContents, std::string decryptContents) 
 
 void task2B(cl::Program* program, cl::Context* context, cl::Device* device, std::string filename, std::string cypherFilename, std::string decryptFilename) {
 	std::string fileContents, cypherContents, decryptContents;
-	int shift;
+	int shift = -5;
 	int filenameSize = sizeof(filename);
 	/*if (!SelectNumber(&shift)) {
 		quit_program("Invalid number picked.");
 	}*/
 
 	fileContents = ReadFile(filename);
-	std::vector<cl_char> charArray(fileContents.length());
+	std::vector<char> charArray(fileContents.length());
 	std::copy(fileContents.begin(), fileContents.end(), charArray.begin());
-	std::vector<cl_char> charOutput(512);
+	std::vector<char> charOutput(fileContents.length());
 
 
 	cl::Kernel kernel = cl::Kernel(*program, "CeaserShift");
 
 	// create command queue
 	cl::CommandQueue queue = cl::CommandQueue(*context, *device);
-
+	int test = sizeof(cl_char);
 	// Buffers
-	cl::Buffer inputBuffer = cl::Buffer(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(charArray), &charArray[0]);
+	cl::Buffer inputBuffer = cl::Buffer(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_char) * charArray.size(), &charArray[0]);
 	cl::Buffer outputBuffer = cl::Buffer(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_char) * charOutput.size(), &charOutput[0]);
+	cl::Buffer shiftBuffer = cl::Buffer(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_int), &shift);
 
 	// set kernel arguments
 	kernel.setArg(0, inputBuffer);
 	kernel.setArg(1, outputBuffer);
+	kernel.setArg(2, shiftBuffer);
 
 	// enqueue kernel for execution
-	cl::NDRange offset(0);
-	cl::NDRange globalSize(16);
-	cl::NDRange localSize(1);
+	cl::NDRange offset(OFFSET);
+	cl::NDRange globalSize(fileContents.length());
+	cl::NDRange localSize(LOCAL_SIZE);
 
 	queue.enqueueNDRangeKernel(kernel, offset, globalSize, localSize);
 
@@ -416,7 +421,7 @@ void task2B(cl::Program* program, cl::Context* context, cl::Device* device, std:
 	// enqueue command to read from device to host memory
 	queue.enqueueReadBuffer(outputBuffer, CL_TRUE, 0, sizeof(cl_char) * charOutput.size(), &charOutput[0]);
 
-	for (int i = 0; i < 32; i++) {
+	for (int i = 0; i < charOutput.size(); i++) {
 		std::cout << i << ": Original item: " << charArray[i] << ". Output array item " << ": " << charOutput[i] << std::endl;
 	}
 	

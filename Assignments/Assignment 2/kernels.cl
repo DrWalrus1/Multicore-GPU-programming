@@ -14,8 +14,5 @@ __kernel void task1b(__global int4* vec1, __global int* vec2, __global int* outp
     
 }
 
-__kernel void CeaserShiftEncrypt() {
-}
-
-__kernel void CeaserShiftDecrypt() {
+__kernel void CeaserShift(__global char* charArray, __global char* outputArray) {
 }

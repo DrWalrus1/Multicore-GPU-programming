@@ -377,15 +377,39 @@ bool CompareFileContents(std::string fileContents, std::string decryptContents) 
 }
 
 void task2B(cl::Program* program, cl::Context* context, cl::Device* device, std::string filename, std::string cypherFilename, std::string decryptFilename) {
+	std::string fileContents, cypherContents, decryptContents;
 	int shift;
-
+	int filenameSize = sizeof(filename);
 	/*if (!SelectNumber(&shift)) {
 		quit_program("Invalid number picked.");
 	}*/
 
-
 	fileContents = ReadFile(filename);
-	const char* myStringChars = fileContents.c_str();
+	const char* charArray = fileContents.c_str();
+	std::vector<cl_char> charOutput(sizeof(fileContents));
+
+	cl::Kernel kernel = cl::Kernel(*program, "CeaserShift");
+
+	// create command queue
+	cl::CommandQueue queue = cl::CommandQueue(*context, *device);
+
+	// Buffers
+	cl::Buffer inputBuffer = cl::Buffer(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_char), &charArray);
+	cl::Buffer outputBuffer = cl::Buffer(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(charArray), &charOutput[0]);
+
+	// set kernel arguments
+	kernel.setArg(0, inputBuffer);
+	kernel.setArg(1, outputBuffer);
+
+	// enqueue kernel for execution
+	cl::NDRange offset(OFFSET);
+	cl::NDRange globalSize(GLOBAL_SIZE);
+	cl::NDRange localSize(LOCAL_SIZE);
+
+	queue.enqueueNDRangeKernel(kernel, offset, globalSize, localSize);
+
+	std::cout << "Kernel enqueued." << std::endl;
+	std::cout << "--------------------" << std::endl;
 }
 // function to lookup and return error code string
 const std::string lookup_error_code(cl_int error_code)

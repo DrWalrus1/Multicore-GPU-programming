@@ -14,7 +14,6 @@ int main()
     cl::Kernel kernel;				// a single kernel object
     cl::CommandQueue queue;			// commandqueue for a context and device
 
-
     cl::Buffer choiceBuffer, numBuffer;
     
     try {
@@ -35,7 +34,10 @@ int main()
         }
 
         //task1A(&program, &context, &device);
-        task1B(&program, &context, &device);
+        //task1B(&program, &context, &device);
+        
+        //task2A("plaintext.txt", "cipher.txt", "decrypt.txt");
+        task2B(&program, &context, &device, "plaintext.txt", "cipher.txt", "decrypt.txt");
     }
     catch (cl::Error e) {
         // call function to handle errors

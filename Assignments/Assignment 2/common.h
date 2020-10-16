@@ -18,6 +18,7 @@
 #include <vector>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
 
 // OpenCL header, depending on OS
 #ifdef __APPLE__
@@ -48,4 +49,15 @@ void task1A(cl::Program* program, cl::Context* context, cl::Device* device);
 
 void task1B(cl::Program* program, cl::Context* context, cl::Device* device);
 
+void task2A(std::string inFilename, std::string cypherFilename, std::string decryptFilename);
+
+std::string ReadFile(std::string filename);
+
+std::string CeaserShift(std::string text, int shift);
+
+void WriteToFile(std::string fileName, std::string contents);
+
+bool CompareFileContents(std::string fileName, std::string decryptFileName);
+
+void task2B(cl::Program* program, cl::Context* context, cl::Device* device, std::string filename, std::string cypherFilename, std::string decryptFilename);
 #endif

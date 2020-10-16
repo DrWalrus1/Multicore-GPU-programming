@@ -242,10 +242,10 @@ void task1A(cl::Program* program, cl::Context* context, cl::Device* device) {
 
 	for (int i = 0; i < GLOBAL_SIZE; i++)
 	{
-		std::cout << "Item " << i << ": " << numbers[i] << std::endl;
+		std::cout << "Item " << i+1 << ": " << numbers[i] << std::endl;
 	}
 	//FIXME: DOESN'T SEEM TO WORK ON GPU
-	//FIXME: At a random point during runtime, the numbers will multiply again
+	//FIXME: At a random point during runtime, the numbers will multiply again (only happens on 8700k,)
 }
 
 void task1B(cl::Program* program, cl::Context* context, cl::Device* device) {
@@ -286,6 +286,107 @@ void task1B(cl::Program* program, cl::Context* context, cl::Device* device) {
 
 }
 
+void task2A(std::string filename, std::string cypherFilename, std::string decryptFilename) {
+	std::string fileContents, cypherContents, decryptContents;
+	int shift;
+
+	if (!SelectNumber(&shift)) {
+		quit_program("Invalid number picked.");
+	}
+	
+
+	fileContents = ReadFile(filename);
+	WriteToFile(cypherFilename, CeaserShift(fileContents, shift));
+	
+	cypherContents = ReadFile(cypherFilename);
+	WriteToFile(decryptFilename, CeaserShift(cypherContents, shift * -1));
+
+	decryptContents = ReadFile(decryptFilename);
+	if (CompareFileContents(fileContents, decryptContents) == true) {
+		std::cout << "It matches!" << std::endl;
+	}
+	else {
+		std::cout << "No match!" << std::endl;
+	}
+}
+
+std::string ReadFile(std::string filename) {
+	// open input file stream to .cl file
+	std::ifstream file(filename);
+	std::string str, fileContents;
+	// check whether file was opened
+	if (!file.is_open())
+	{
+		quit_program("File: " + filename + " not found.");
+	}
+
+	while (std::getline(file, str)) {
+		fileContents += str;
+		fileContents += '\n';
+	}
+
+	std::transform(fileContents.begin(), fileContents.end(), fileContents.begin(), ::toupper);
+	return fileContents;
+}
+
+std::string CeaserShift(std::string text, int shift) {
+	int Apos = 65, Zpos = 90;
+	for (int i = 0; i < text.length(); i++) {
+		int remainingShift = shift;
+		char current = text[i];
+		if (((int)current + shift) > Zpos || ((int)current + shift) < Apos) {
+			continue;
+		}
+		while (remainingShift != 0) {
+			//Adding
+			if (((int)current + shift) > Zpos) {
+				int difference = Zpos - (int)current;
+				current = Apos - 1;
+				remainingShift = remainingShift - difference;
+			//Subtracting
+			} else if (((int)current + shift) < Apos) {
+				int difference = (int)current - Apos;
+				current = Zpos +1;
+				remainingShift = remainingShift + difference;
+			}
+			else {
+				text[i] = (char)((int)current + shift);
+				remainingShift = 0;
+			}
+		}
+
+	}
+
+	return text;
+}
+
+void WriteToFile(std::string fileName, std::string contents) {
+	std::ofstream ofs;
+	ofs.open(fileName);
+	ofs << contents;
+	ofs.close();
+}
+
+bool CompareFileContents(std::string fileContents, std::string decryptContents) {
+	if (fileContents.compare(decryptContents)) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+void task2B(cl::Program* program, cl::Context* context, cl::Device* device, std::string filename, std::string cypherFilename, std::string decryptFilename) {
+	int shift;
+
+	/*if (!SelectNumber(&shift)) {
+		quit_program("Invalid number picked.");
+	}*/
+
+
+	fileContents = ReadFile(filename);
+	const char* myStringChars = fileContents.c_str();
+}
 // function to lookup and return error code string
 const std::string lookup_error_code(cl_int error_code)
 {

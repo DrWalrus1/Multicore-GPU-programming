@@ -32,4 +32,15 @@
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="plaintext.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="cipher.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="decrypt.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+  </ItemGroup>
 </Project>

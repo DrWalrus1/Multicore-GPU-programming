@@ -154,6 +154,11 @@
   <ItemGroup>
     <None Include="kernels.cl" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="cipher.txt" />
+    <Text Include="decrypt.txt" />
+    <Text Include="plaintext.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

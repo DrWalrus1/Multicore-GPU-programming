@@ -13,3 +13,9 @@ __kernel void add(__global int *a, __global int *b) {
 __kernel void task1b(__global int4* vec1, __global int* vec2, __global int* output) {
     
 }
+
+__kernel void CeaserShiftEncrypt() {
+}
+
+__kernel void CeaserShiftDecrypt() {
+}

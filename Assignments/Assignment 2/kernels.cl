@@ -50,3 +50,16 @@ __kernel void CeaserShift(__global char* charArray, __global char* outputArray, 
         }
     }
 }
+
+__kernel void CustomEncrypt(__global char* fromChar, __global char* toChar, __global char* charArray, __global char* outputArray) {
+    int global_id = get_global_id(0);
+    int offset = get_global_offset(0);
+
+    int index = (global_id - offset);
+    
+    for (int i = 0; i < 26; i++) {
+        if (charArray[index] == fromChar[i]) {
+            outputArray[index] = toChar[i];
+        }
+    }
+}

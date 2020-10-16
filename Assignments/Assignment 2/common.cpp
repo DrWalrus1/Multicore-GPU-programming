@@ -193,10 +193,16 @@ void quit_program(const std::string str)
 }
 
 bool SelectNumber(int* UserChoice) {
+	std::cout << "Please input a number: ";
+	std::cin >> *UserChoice;
+	return true;
+}
+
+bool SelectNumber(int* UserChoice, int min, int max) {
 	std::cout << "Please input a number between 1 and 100: ";
 	std::cin >> *UserChoice;
 	std::cin.ignore();
-	if (*UserChoice >= 1 && *UserChoice <= 100) {
+	if (*UserChoice >= min && *UserChoice <= max) {
 		return true;
 	}
 	else {
@@ -210,7 +216,7 @@ void task1A(cl::Program* program, cl::Context* context, cl::Device* device) {
 	numbers[0] = 3;
 
 	// take user number input
-	if (!SelectNumber(&UserChoice)) {
+	if (!SelectNumber(&UserChoice, 1, 100)) {
 		quit_program("Invalid Number");
 	}
 
@@ -381,23 +387,45 @@ bool CompareFileContents(std::string fileContents, std::string decryptContents) 
 
 void task2B(cl::Program* program, cl::Context* context, cl::Device* device, std::string filename, std::string cypherFilename, std::string decryptFilename) {
 	std::string fileContents, cypherContents, decryptContents;
-	int shift = -5;
+	int shift;
 	int filenameSize = sizeof(filename);
-	/*if (!SelectNumber(&shift)) {
+	if (!SelectNumber(&shift)) {
 		quit_program("Invalid number picked.");
-	}*/
+	}
 
 	fileContents = ReadFile(filename);
 	std::vector<char> charArray(fileContents.length());
 	std::copy(fileContents.begin(), fileContents.end(), charArray.begin());
-	std::vector<char> charOutput(fileContents.length());
 
+	std::string encryptedString = MultiCoreEncrypt(program, context, device, charArray, shift);
+
+	WriteToFile(cypherFilename, encryptedString);
+
+	cypherContents = ReadFile(cypherFilename);
+	std::vector<char> cypherArray(cypherContents.length());
+	std::copy(cypherContents.begin(), cypherContents.end(), cypherArray.begin());
+
+	std::string decryptedString = MultiCoreEncrypt(program, context, device, charArray, shift * -1);
+
+	if (CompareFileContents(fileContents, decryptedString) == true) {
+		std::cout << "It matches!" << std::endl;
+	}
+	else {
+		std::cout << "No match!" << std::endl;
+	}
+
+	quit_program("File Encrypted.");
+	
+}
+
+std::string MultiCoreEncrypt(cl::Program* program, cl::Context* context, cl::Device* device, std::vector<char> charArray, int shift) {
+	std::vector<char> charOutput(sizeof(cl_char) * charArray.size());
 
 	cl::Kernel kernel = cl::Kernel(*program, "CeaserShift");
 
 	// create command queue
 	cl::CommandQueue queue = cl::CommandQueue(*context, *device);
-	int test = sizeof(cl_char);
+
 	// Buffers
 	cl::Buffer inputBuffer = cl::Buffer(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_char) * charArray.size(), &charArray[0]);
 	cl::Buffer outputBuffer = cl::Buffer(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_char) * charOutput.size(), &charOutput[0]);
@@ -410,7 +438,7 @@ void task2B(cl::Program* program, cl::Context* context, cl::Device* device, std:
 
 	// enqueue kernel for execution
 	cl::NDRange offset(OFFSET);
-	cl::NDRange globalSize(fileContents.length());
+	cl::NDRange globalSize(sizeof(cl_char) * charArray.size());
 	cl::NDRange localSize(LOCAL_SIZE);
 
 	queue.enqueueNDRangeKernel(kernel, offset, globalSize, localSize);
@@ -421,11 +449,58 @@ void task2B(cl::Program* program, cl::Context* context, cl::Device* device, std:
 	// enqueue command to read from device to host memory
 	queue.enqueueReadBuffer(outputBuffer, CL_TRUE, 0, sizeof(cl_char) * charOutput.size(), &charOutput[0]);
 
-	for (int i = 0; i < charOutput.size(); i++) {
-		std::cout << i << ": Original item: " << charArray[i] << ". Output array item " << ": " << charOutput[i] << std::endl;
-	}
-	
+	return (std::string(charOutput.begin(), charOutput.end()));
 }
+
+void task2C(cl::Program* program, cl::Context* context, cl::Device* device, std::string filename, std::string cypherFilename, std::string decryptFilename) {
+	std::string fileContents, cypherContents, decryptContents;
+	cl_char fromCharArray[] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'};
+	std::vector<cl_char> fromChar(fromCharArray, fromCharArray + sizeof(fromCharArray) / sizeof(cl_char));
+	cl_char toCharArray[] = {'G','X','S','Q','F','A','R','O','W','B','L','M','T','H','C','V','P','N','Z','U','I','E','Y','D','K','J'};
+	std::vector<cl_char> toChar(toCharArray, toCharArray + sizeof(toCharArray) / sizeof(cl_char));
+
+	fileContents = ReadFile(filename);
+	std::vector<char> charArray(fileContents.length());
+	std::copy(fileContents.begin(), fileContents.end(), charArray.begin());
+
+	std::vector<char> charOutput(sizeof(cl_char) * charArray.size());
+
+	cl::Kernel kernel = cl::Kernel(*program, "CustomEncrypt");
+
+	// create command queue
+	cl::CommandQueue queue = cl::CommandQueue(*context, *device);
+
+	// Buffers
+	cl::Buffer fromCharBuffer = cl::Buffer(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_char) * fromChar.size(), &fromChar[0]);
+	cl::Buffer toCharBuffer = cl::Buffer(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_char) * toChar.size(), &toChar[0]);
+	cl::Buffer charArrayBuffer = cl::Buffer(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_char) * charArray.size(), &charArray[0]);
+	cl::Buffer outputBuffer = cl::Buffer(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_char) * charOutput.size(), &charOutput[0]);
+
+	// set kernel arguments
+	kernel.setArg(0, fromCharBuffer);
+	kernel.setArg(1, toCharBuffer);
+	kernel.setArg(2, charArrayBuffer);
+	kernel.setArg(3, outputBuffer);
+
+	// enqueue kernel for execution
+	cl::NDRange offset(0);
+	cl::NDRange globalSize(sizeof(cl_char) * charArray.size());
+	cl::NDRange localSize(4);
+
+	queue.enqueueNDRangeKernel(kernel, offset, globalSize, localSize);
+
+	std::cout << "Kernel enqueued." << std::endl;
+	std::cout << "--------------------" << std::endl;
+
+	// enqueue command to read from device to host memory
+	queue.enqueueReadBuffer(outputBuffer, CL_TRUE, 0, sizeof(cl_char) * charOutput.size(), &charOutput[0]);
+
+	std::string encrypted(charOutput.begin(), charOutput.end());
+
+	std::cout << "Result: " << encrypted << std::endl;
+
+}
+
 // function to lookup and return error code string
 const std::string lookup_error_code(cl_int error_code)
 {

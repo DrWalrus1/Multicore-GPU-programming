@@ -19,6 +19,7 @@
 #include <sstream>
 #include <fstream>
 #include <algorithm>
+#include <map>
 
 // OpenCL header, depending on OS
 #ifdef __APPLE__
@@ -45,6 +46,8 @@ bool build_program(cl::Program* prog, const cl::Context* ctx, const std::string 
 
 bool SelectNumber(int* UserChoice);
 
+bool SelectNumber(int* UserChoice, int min, int max);
+
 void task1A(cl::Program* program, cl::Context* context, cl::Device* device);
 
 void task1B(cl::Program* program, cl::Context* context, cl::Device* device);
@@ -60,4 +63,8 @@ void WriteToFile(std::string fileName, std::string contents);
 bool CompareFileContents(std::string fileName, std::string decryptFileName);
 
 void task2B(cl::Program* program, cl::Context* context, cl::Device* device, std::string filename, std::string cypherFilename, std::string decryptFilename);
+
+std::string MultiCoreEncrypt(cl::Program* program, cl::Context* context, cl::Device* device, std::vector<char> charArray, int shift);
+
+void task2C(cl::Program* program, cl::Context* context, cl::Device* device, std::string filename, std::string cypherFilename, std::string decryptFilename);
 #endif

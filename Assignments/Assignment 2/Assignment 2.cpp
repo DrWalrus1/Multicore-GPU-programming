@@ -37,7 +37,8 @@ int main()
         //task1B(&program, &context, &device);
         
         //task2A("plaintext.txt", "ciphertext.txt", "decrypted.txt");
-        task2B(&program, &context, &device, "plaintext.txt", "ciphertext.txt", "decrypted.txt");
+        //task2B(&program, &context, &device, "plaintext.txt", "cipher.txt", "decrypted.txt");
+        task2C(&program, &context, &device, "test.txt", "cipher.txt", "decrypted.txt");
     }
     catch (cl::Error e) {
         // call function to handle errors

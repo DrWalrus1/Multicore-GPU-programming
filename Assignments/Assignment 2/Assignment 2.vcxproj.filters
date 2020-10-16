@@ -36,13 +36,16 @@
     <Text Include="plaintext.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="cipher.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
     <Text Include="decrypt.txt">
       <Filter>Resource Files</Filter>
     </Text>
     <Text Include="test.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="ciphertext.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="decrypted.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>

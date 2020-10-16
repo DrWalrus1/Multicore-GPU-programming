@@ -155,8 +155,9 @@
     <None Include="kernels.cl" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="cipher.txt" />
+    <Text Include="ciphertext.txt" />
     <Text Include="decrypt.txt" />
+    <Text Include="decrypted.txt" />
     <Text Include="plaintext.txt" />
     <Text Include="test.txt" />
   </ItemGroup>

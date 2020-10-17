@@ -33,12 +33,15 @@ int main()
             quit_program("OpenCL program build error.");
         }
 
-        //task1A(&program, &context, &device);
-        //task1B(&program, &context, &device);
+        task1A(&program, &context, &device);
+        task1B(&program, &context, &device);
         
-        //task2A("plaintext.txt", "ciphertext.txt", "decrypted.txt");
-        //task2B(&program, &context, &device, "plaintext.txt", "cipher.txt", "decrypted.txt");
-        task2C(&program, &context, &device, "test.txt", "cipher.txt", "decrypted.txt");
+        task2A("plaintext.txt", "ciphertext.txt", "decrypted.txt");
+        task2B(&program, &context, &device, "plaintext.txt", "cipher.txt", "decrypted.txt");
+        task2C(&program, &context, &device, "plaintext.txt", "customcipher.txt", "customcipherdecrypted.txt");
+
+        quit_program("Program Finished.");
+        std::cin.ignore();
     }
     catch (cl::Error e) {
         // call function to handle errors

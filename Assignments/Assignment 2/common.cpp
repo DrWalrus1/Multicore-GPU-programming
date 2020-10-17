@@ -497,7 +497,11 @@ void task2C(cl::Program* program, cl::Context* context, cl::Device* device, std:
 
 	std::string encrypted(charOutput.begin(), charOutput.end());
 
-	std::cout << "Result: " << encrypted << std::endl;
+	WriteToFile(cypherFilename, encrypted);
+
+	cypherContents = ReadFile(cypherFilename);
+	std::vector<char> cypherArray(cypherContents.length());
+	std::copy(cypherContents.begin(), cypherContents.end(), cypherArray.begin());
 
 }
 

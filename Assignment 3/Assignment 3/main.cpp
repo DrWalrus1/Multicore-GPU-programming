@@ -1,5 +1,6 @@
 
 #include "common.h"
+#include "bitmap.h"
 
 int main()
 {

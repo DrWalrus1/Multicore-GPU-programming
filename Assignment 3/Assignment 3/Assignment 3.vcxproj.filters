@@ -21,9 +21,15 @@
     <ClCompile Include="common.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="bitmap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bitmap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -31,9 +37,15 @@
     <None Include="Assignment3.pdf">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="simple_image.cl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="peppers.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="output.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

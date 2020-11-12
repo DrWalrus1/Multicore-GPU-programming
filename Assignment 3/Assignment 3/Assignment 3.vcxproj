@@ -152,8 +152,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Assignment3.pdf" />
+    <None Include="simple_image.cl" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="output.bmp" />
     <Image Include="peppers.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

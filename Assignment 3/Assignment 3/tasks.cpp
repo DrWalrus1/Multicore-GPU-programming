@@ -1,17 +1,18 @@
 #include "tasks.h"
 
 
+cl::Kernel kernel;
+cl::CommandQueue queue;
+cl::ImageFormat imgFormat;
+
 // Flips image left to right, top to bottom and then left to right and top to bottom.
 void Task1(cl::Program* program, cl::Context* context, cl::Device* device, imageData image) {
 
-	cl::Kernel kernel;
-	cl::CommandQueue queue;
 
 	unsigned char* outputHFlipImage = new unsigned char[image.imageSize];
 	unsigned char* outputVFlipImage = new unsigned char[image.imageSize];
 	unsigned char* outputBothFlipImage = new unsigned char[image.imageSize];
 
-	cl::ImageFormat imgFormat;
 	cl::Image2D inputImgBuffer, outputHorizontalImgBuffer, outputVerticalImgBuffer, outputBothImgBuffer;
 
 	imgFormat = cl::ImageFormat(CL_RGBA, CL_UNORM_INT8);
@@ -40,7 +41,7 @@ void Task1(cl::Program* program, cl::Context* context, cl::Device* device, image
 
 	queue.enqueueNDRangeKernel(kernel, offset, globalSize);
 
-	std::cout << "Kernel enqueued." << std::endl;
+	std::cout << "Flip images kernel enqueued." << std::endl;
 	std::cout << "--------------------" << std::endl;
 
 	cl::size_t<3> origin, region;
@@ -61,7 +62,52 @@ void Task1(cl::Program* program, cl::Context* context, cl::Device* device, image
 	std::cout << "Done." << std::endl;
 
 	// deallocate memory
-	free(outputHFlipImage);
-	free(outputVFlipImage);
-	free(outputBothFlipImage);
+	delete[] outputHFlipImage;
+	delete[] outputVFlipImage;
+	delete[] outputBothFlipImage;
+}
+
+void Task2(cl::Program* program, cl::Context* context, cl::Device* device, imageData image) {
+
+	unsigned char* outputImage = new unsigned char[image.imageSize];
+	
+	// create a kernel
+	kernel = cl::Kernel(*program, "black_and_white");
+
+	// create command queue
+	queue = cl::CommandQueue(*context, *device);
+
+	imgFormat = cl::ImageFormat(CL_RGBA, CL_UNORM_INT8);
+
+	cl::Image2D inputBuffer, outputBuffer;
+
+	inputBuffer = cl::Image2D(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, imgFormat, image.imgWidth, image.imgHeight, 0, (void*)image.inputImage);
+	outputBuffer = cl::Image2D(*context, CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, imgFormat, image.imgWidth, image.imgHeight, 0, (void*)outputImage);
+
+	kernel.setArg(0, inputBuffer);
+	kernel.setArg(1, outputBuffer);
+
+	// enqueue kernel
+	cl::NDRange offset(0, 0);
+	cl::NDRange globalSize(image.imgWidth, image.imgHeight);
+
+	queue.enqueueNDRangeKernel(kernel, offset, globalSize);
+
+	std::cout << "Luminance kernel enqueued." << std::endl;
+	std::cout << "--------------------" << std::endl;
+
+	cl::size_t<3> origin, region;
+	origin[0] = origin[1] = origin[2] = 0;
+	region[0] = image.imgWidth;
+	region[1] = image.imgHeight;
+	region[2] = 1;
+
+	queue.enqueueReadImage(outputBuffer, CL_TRUE, origin, region, 0, 0, outputImage);
+
+	// output results to image file
+	write_BMP_RGBA_to_RGB("Task2.bmp", outputImage, image.imgWidth, image.imgHeight);
+
+	std::cout << "Done." << std::endl;
+
+	free(outputImage);
 }

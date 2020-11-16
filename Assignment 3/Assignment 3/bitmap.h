@@ -1,3 +1,4 @@
+#pragma once
 #ifndef __BMPFUNCS__
 #define __BMPFUNCS__
 

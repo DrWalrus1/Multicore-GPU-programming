@@ -1,4 +1,3 @@
-
 #include "common.h"
 #include "bitmap.h"
 #include "tasks.h"
@@ -10,8 +9,6 @@ int main(void)
 	cl::Device device;				// device used
 	cl::Context context;			// context for the device
 	cl::Program program;			// OpenCL program object
-	cl::Kernel kernel;				// a single kernel object
-	cl::CommandQueue queue;			// commandqueue for a context and device
 
 
 	// declare data and memory objects
@@ -40,6 +37,8 @@ int main(void)
 		image.imageSize = image.imgWidth * image.imgHeight * 4;
 		
 		Task1(&program, &context, &device, image);
+		
+		Task2(&program, &context, &device, image);
 
 	
 		free(image.inputImage);

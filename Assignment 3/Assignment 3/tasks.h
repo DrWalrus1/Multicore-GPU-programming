@@ -1,5 +1,5 @@
 #pragma once
-#include "common.h";
+#include "common.h"
 #include "bitmap.h"
 
 struct imageData {
@@ -8,3 +8,5 @@ struct imageData {
 };
 
 void Task1(cl::Program* program, cl::Context* context, cl::Device* device, imageData image);
+
+void Task2(cl::Program* program, cl::Context* context, cl::Device* device, imageData image);

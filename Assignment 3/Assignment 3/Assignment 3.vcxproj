@@ -145,10 +145,12 @@
     <ClCompile Include="bitmap.cpp" />
     <ClCompile Include="common.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="tasks.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bitmap.h" />
     <ClInclude Include="common.h" />
+    <ClInclude Include="tasks.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assignment3.pdf" />

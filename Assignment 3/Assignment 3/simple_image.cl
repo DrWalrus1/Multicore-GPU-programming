@@ -36,11 +36,12 @@ __kernel void flip_images(read_only image2d_t src_image,
 	
 	int imgWidth = get_image_width(src_image);
 	int imgHeight = get_image_height(src_image);
+
 	
 	/* Get pixel coordinate */
 	int2 coord = (int2)(get_global_id(0), get_global_id(1));
-	int2 flip_horizontal_coord = (int2) (imgWidth - coord.x, coord.y);
-	int2 flip_vertical_coord = (int2) (coord.x, imgHeight - coord.y);
+	int2 flip_horizontal_coord = (int2) (imgWidth - 1 - coord.x, coord.y);
+	int2 flip_vertical_coord = (int2) (coord.x, imgHeight - 1 - coord.y);
 	int2 flip_both_coord = (int2) (flip_horizontal_coord.x, flip_vertical_coord.y);
 
 	/* Read pixel value */

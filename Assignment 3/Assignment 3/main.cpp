@@ -1,6 +1,7 @@
 
 #include "common.h"
 #include "bitmap.h"
+#include "tasks.h"
 
 int main(void)
 {
@@ -13,16 +14,6 @@ int main(void)
 	cl::CommandQueue queue;			// commandqueue for a context and device
 
 
-	// declare data and memory objects
-	unsigned char* inputImage;
-	unsigned char* outputImage;
-	int imgWidth, imgHeight, imageSize;
-
-	cl::ImageFormat imgFormat;
-	cl::Image2D inputImgBuffer, outputImgBuffer;
-
-	// Buffers
-	//cl::Buffer imageBuffer = cl::Buffer();
 	try {
 		// select an OpenCL device
 		if (!select_one_device(&platform, &device))
@@ -40,61 +31,11 @@ int main(void)
 			// if OpenCL program build error
 			quit_program("OpenCL program build error.");
 		}
+		
+		Task1(&program, &context, &device);
 
-		// create a kernel
-		kernel = cl::Kernel(program, "simple_image");
-
-		// create command queue
-		queue = cl::CommandQueue(context, device);
-
-		// read input image
-		inputImage = read_BMP_RGB_to_RGBA("peppers.bmp", &imgWidth, &imgHeight);
-
-
-		// allocate memory for output image
-		imageSize = imgWidth * imgHeight * 4;
-		outputImage = new unsigned char[imageSize];
-
-		// image format
-		imgFormat = cl::ImageFormat(CL_RGBA, CL_UNORM_INT8);
-
-		// create image objects
-		inputImgBuffer = cl::Image2D(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, imgFormat, imgWidth, imgHeight, 0, (void*)inputImage);
-		outputImgBuffer = cl::Image2D(context, CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, imgFormat, imgWidth, imgHeight, 0, (void*)outputImage);
-
-		// create image objects
-		inputImgBuffer = cl::Image2D(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, imgFormat, imgWidth, imgHeight, 0, (void*)inputImage);
-		outputImgBuffer = cl::Image2D(context, CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, imgFormat, imgWidth, imgHeight, 0, (void*)outputImage);
-
-		// set kernel arguments
-		kernel.setArg(0, inputImgBuffer);
-		kernel.setArg(1, outputImgBuffer);
-
-		// enqueue kernel
-		cl::NDRange offset(0, 0);
-		cl::NDRange globalSize(imgWidth, imgHeight);
-
-		queue.enqueueNDRangeKernel(kernel, offset, globalSize);
-
-		std::cout << "Kernel enqueued." << std::endl;
-		std::cout << "--------------------" << std::endl;
-
-		cl::size_t<3> origin, region;
-		origin[0] = origin[1] = origin[2] = 0;
-		region[0] = imgWidth;
-		region[1] = imgHeight;
-		region[2] = 1;
-
-		queue.enqueueReadImage(outputImgBuffer, CL_TRUE, origin, region, 0, 0, outputImage);
-
-		// output results to image file
-		write_BMP_RGBA_to_RGB("output.bmp", outputImage, imgWidth, imgHeight);
-
-		std::cout << "Done." << std::endl;
-
-		// deallocate memory
-		free(inputImage);
-		free(outputImage);
+	
+		
 	}
 	catch (cl::Error e) {
 		// call function to handle errors
@@ -105,6 +46,7 @@ int main(void)
 	std::cout << "\npress a key to quit...";
 	std::cin.ignore();
 #endif
+
 
 	return 0;
 }

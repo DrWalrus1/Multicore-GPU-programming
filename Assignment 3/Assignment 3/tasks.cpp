@@ -1,27 +1,15 @@
-#include "bitmap.h"
 #include "tasks.h"
 
 
 // Flips image left to right, top to bottom and then left to right and top to bottom.
-void Task1(cl::Program* program, cl::Context* context, cl::Device* device) {
+void Task1(cl::Program* program, cl::Context* context, cl::Device* device, imageData image) {
 
 	cl::Kernel kernel;
 	cl::CommandQueue queue;
 
-	unsigned char* inputImage;
-	int imgWidth, imgHeight, imageSize;
-
-	unsigned char* outputHFlipImage;
-
-	// read input image
-	inputImage = read_BMP_RGB_to_RGBA("lena.bmp", &imgWidth, &imgHeight);
-
-	// allocate memory for output image
-	imageSize = imgWidth * imgHeight * 4;
-
-	outputHFlipImage = new unsigned char[imageSize];
-	unsigned char* outputVFlipImage = new unsigned char[imageSize];
-	unsigned char* outputBothFlipImage = new unsigned char[imageSize];
+	unsigned char* outputHFlipImage = new unsigned char[image.imageSize];
+	unsigned char* outputVFlipImage = new unsigned char[image.imageSize];
+	unsigned char* outputBothFlipImage = new unsigned char[image.imageSize];
 
 	cl::ImageFormat imgFormat;
 	cl::Image2D inputImgBuffer, outputHorizontalImgBuffer, outputVerticalImgBuffer, outputBothImgBuffer;
@@ -35,10 +23,10 @@ void Task1(cl::Program* program, cl::Context* context, cl::Device* device) {
 	queue = cl::CommandQueue(*context, *device);
 
 	// create image objects
-	inputImgBuffer = cl::Image2D(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, imgFormat, imgWidth, imgHeight, 0, (void*)inputImage);
-	outputHorizontalImgBuffer = cl::Image2D(*context, CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, imgFormat, imgWidth, imgHeight, 0, (void*)outputHFlipImage);
-	outputVerticalImgBuffer = cl::Image2D(*context, CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, imgFormat, imgWidth, imgHeight, 0, (void*)outputVFlipImage);
-	outputBothImgBuffer = cl::Image2D(*context, CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, imgFormat, imgWidth, imgHeight, 0, (void*)outputBothFlipImage);
+	inputImgBuffer = cl::Image2D(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, imgFormat, image.imgWidth, image.imgHeight, 0, (void*)image.inputImage);
+	outputHorizontalImgBuffer = cl::Image2D(*context, CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, imgFormat, image.imgWidth, image.imgHeight, 0, (void*)outputHFlipImage);
+	outputVerticalImgBuffer = cl::Image2D(*context, CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, imgFormat, image.imgWidth, image.imgHeight, 0, (void*)outputVFlipImage);
+	outputBothImgBuffer = cl::Image2D(*context, CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, imgFormat, image.imgWidth, image.imgHeight, 0, (void*)outputBothFlipImage);
 
 	// set kernel arguments
 	kernel.setArg(0, inputImgBuffer);
@@ -48,7 +36,7 @@ void Task1(cl::Program* program, cl::Context* context, cl::Device* device) {
 
 	// enqueue kernel
 	cl::NDRange offset(0, 0);
-	cl::NDRange globalSize(imgWidth, imgHeight);
+	cl::NDRange globalSize(image.imgWidth, image.imgHeight);
 
 	queue.enqueueNDRangeKernel(kernel, offset, globalSize);
 
@@ -57,8 +45,8 @@ void Task1(cl::Program* program, cl::Context* context, cl::Device* device) {
 
 	cl::size_t<3> origin, region;
 	origin[0] = origin[1] = origin[2] = 0;
-	region[0] = imgWidth;
-	region[1] = imgHeight;
+	region[0] = image.imgWidth;
+	region[1] = image.imgHeight;
 	region[2] = 1;
 
 	queue.enqueueReadImage(outputHorizontalImgBuffer, CL_TRUE, origin, region, 0, 0, outputHFlipImage);
@@ -66,14 +54,13 @@ void Task1(cl::Program* program, cl::Context* context, cl::Device* device) {
 	queue.enqueueReadImage(outputBothImgBuffer, CL_TRUE, origin, region, 0, 0, outputBothFlipImage);
 
 	// output results to image file
-	write_BMP_RGBA_to_RGB("Task1a.bmp", outputHFlipImage, imgWidth, imgHeight);
-	write_BMP_RGBA_to_RGB("Task1b.bmp", outputVFlipImage, imgWidth, imgHeight);
-	write_BMP_RGBA_to_RGB("Task1c.bmp", outputBothFlipImage, imgWidth, imgHeight);
+	write_BMP_RGBA_to_RGB("Task1a.bmp", outputHFlipImage, image.imgWidth, image.imgHeight);
+	write_BMP_RGBA_to_RGB("Task1b.bmp", outputVFlipImage, image.imgWidth, image.imgHeight);
+	write_BMP_RGBA_to_RGB("Task1c.bmp", outputBothFlipImage, image.imgWidth, image.imgHeight);
 
 	std::cout << "Done." << std::endl;
 
 	// deallocate memory
-	free(inputImage);
 	free(outputHFlipImage);
 	free(outputVFlipImage);
 	free(outputBothFlipImage);

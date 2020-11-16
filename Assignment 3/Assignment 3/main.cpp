@@ -14,6 +14,9 @@ int main(void)
 	cl::CommandQueue queue;			// commandqueue for a context and device
 
 
+	// declare data and memory objects
+	struct imageData image;
+
 	try {
 		// select an OpenCL device
 		if (!select_one_device(&platform, &device))
@@ -31,11 +34,15 @@ int main(void)
 			// if OpenCL program build error
 			quit_program("OpenCL program build error.");
 		}
+
+		// read input image
+		image.inputImage = read_BMP_RGB_to_RGBA("peppers.bmp", &image.imgWidth, &image.imgHeight);
+		image.imageSize = image.imgWidth * image.imgHeight * 4;
 		
-		Task1(&program, &context, &device);
+		Task1(&program, &context, &device, image);
 
 	
-		
+		free(image.inputImage);
 	}
 	catch (cl::Error e) {
 		// call function to handle errors
@@ -46,7 +53,6 @@ int main(void)
 	std::cout << "\npress a key to quit...";
 	std::cin.ignore();
 #endif
-
 
 	return 0;
 }

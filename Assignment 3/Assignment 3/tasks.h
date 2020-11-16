@@ -1,4 +1,10 @@
 #pragma once
 #include "common.h";
+#include "bitmap.h"
 
-void Task1(cl::Program* program, cl::Context* context, cl::Device* device);
+struct imageData {
+	unsigned char* inputImage;
+	int imgWidth, imgHeight, imageSize;
+};
+
+void Task1(cl::Program* program, cl::Context* context, cl::Device* device, imageData image);

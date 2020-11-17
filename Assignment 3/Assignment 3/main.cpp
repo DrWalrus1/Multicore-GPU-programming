@@ -40,7 +40,9 @@ int main(void)
 		
 		//Task2(&program, &context, &device, image);
 
-		Task3a(&program, &context, &device, image);
+		//Task3a(&program, &context, &device, image);
+
+		Task3b(&program, &context, &device, image);
 
 		free(image.inputImage);
 	}

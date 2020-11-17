@@ -102,3 +102,48 @@ __kernel void gaussian_blur(read_only image2d_t src_image,
 	coord = (int2)(column, row);
 	write_imagef(dst_image, coord, sum);
 }
+
+__kernel void two_pass_gaussian(read_only image2d_t src_image,
+	write_only image2d_t dst_image) {
+
+	/* Get work-item’s row and column position */
+	int column = get_global_id(0);
+	int row = get_global_id(1);
+
+	/* Accumulated pixel value */
+	float4 sum = (float4)(0.0);
+
+	/* Filter's current index */
+	int filter_index = 0;
+
+	int2 coord;
+	float4 pixel;
+
+	/* Horizontal pass */
+	coord.x = column;
+	for (int i = -3; i <= 3; i++) {
+		coord.y = row + i;
+
+		/* Read value pixel from the image */
+		pixel = read_imagef(src_image, sampler, coord);
+
+		/* Acculumate weighted sum */
+		sum.xyz += pixel.xyz * TwoPassGaussianFilter[filter_index++];
+	}
+
+	/* Vertical pass */
+	coord.y = row;
+	for (int i = -3; i <= 3; i++) {
+		coord.x = column + i;
+
+		/* Read value pixel from the image */
+		pixel = read_imagef(src_image, sampler, coord);
+
+		/* Acculumate weighted sum */
+		sum.xyz += pixel.xyz * TwoPassGaussianFilter[filter_index++];
+	}
+
+	/* Write new pixel value to output */
+	coord = (int2)(column, row);
+	write_imagef(dst_image, coord, sum);
+}

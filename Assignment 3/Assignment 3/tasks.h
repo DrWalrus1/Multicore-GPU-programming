@@ -10,3 +10,5 @@ struct imageData {
 void Task1(cl::Program* program, cl::Context* context, cl::Device* device, imageData image);
 
 void Task2(cl::Program* program, cl::Context* context, cl::Device* device, imageData image);
+
+void Task3a(cl::Program* program, cl::Context* context, cl::Device* device, imageData image);

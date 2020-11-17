@@ -36,11 +36,12 @@ int main(void)
 		image.inputImage = read_BMP_RGB_to_RGBA("peppers.bmp", &image.imgWidth, &image.imgHeight);
 		image.imageSize = image.imgWidth * image.imgHeight * 4;
 		
-		Task1(&program, &context, &device, image);
+		//Task1(&program, &context, &device, image);
 		
-		Task2(&program, &context, &device, image);
+		//Task2(&program, &context, &device, image);
 
-	
+		Task3a(&program, &context, &device, image);
+
 		free(image.inputImage);
 	}
 	catch (cl::Error e) {

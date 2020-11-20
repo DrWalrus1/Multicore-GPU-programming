@@ -19,12 +19,12 @@ __constant float TwoPassGaussianFilter[7] = {
 
 __kernel void simple_image(	read_only image2d_t src_image,
 							write_only image2d_t dst_image) {
-
    /* Get pixel coordinate */
    int2 coord = (int2)(get_global_id(0), get_global_id(1));
 
    /* Read pixel value */
    float4 pixel = read_imagef(src_image, sampler, coord);
+   printf("Coord: %i, %i: R: %f\n", coord.x, coord.y, pixel.x);
    /* Write new pixel value to output */
    write_imagef(dst_image, coord, pixel);
 }
@@ -145,5 +145,116 @@ __kernel void two_pass_gaussian(read_only image2d_t src_image,
 
 	/* Write new pixel value to output */
 	coord = (int2)(column, row);
+	write_imagef(dst_image, coord, sum);
+}
+
+__kernel void luminance_threshold(read_only image2d_t src_image,
+	write_only image2d_t dst_image, double threshold) {
+
+	/* Get pixel coordinate */
+	int2 coord = (int2)(get_global_id(0), get_global_id(1));
+
+	/* Read pixel value */
+	float4 pixel = read_imagef(src_image, sampler, coord);
+	float luminance = (0.299 * pixel.x) + (0.587 * pixel.y) + (0.114 * pixel.z);
+	if (luminance < threshold) {
+		pixel.xyz = 0;
+	}
+
+	/* Write new pixel value to output */
+	write_imagef(dst_image, coord, pixel);
+}
+
+__kernel void horizontal_pass(read_only image2d_t src_image,
+	write_only image2d_t dst_image) {
+
+	/* Get work-item’s row and column position */
+	int column = get_global_id(0);
+	int row = get_global_id(1);
+
+	/* Accumulated pixel value */
+	float4 sum = (float4)(0.0);
+
+	/* Filter's current index */
+	int filter_index = 0;
+
+	int2 coord;
+	float4 pixel;
+
+	/* Horizontal pass */
+	coord.x = column;
+	for (int i = -3; i <= 3; i++) {
+		coord.y = row + i;
+
+		/* Read value pixel from the image */
+		pixel = read_imagef(src_image, sampler, coord);
+
+		/* Acculumate weighted sum */
+		sum.xyz += pixel.xyz * TwoPassGaussianFilter[filter_index++];
+	}
+
+	/* Write new pixel value to output */
+	coord = (int2)(column, row);
+	write_imagef(dst_image, coord, sum);
+}
+
+__kernel void vertical_pass(read_only image2d_t src_image,
+	write_only image2d_t dst_image) {
+
+	/* Get work-item’s row and column position */
+	int column = get_global_id(0);
+	int row = get_global_id(1);
+
+	/* Accumulated pixel value */
+	float4 sum = (float4)(0.0);
+
+	/* Filter's current index */
+	int filter_index = 0;
+
+	int2 coord;
+	float4 pixel;
+
+	/* Vertical pass */
+	coord.y = row;
+	for (int i = -3; i <= 3; i++) {
+		coord.x = column + i;
+
+		/* Read value pixel from the image */
+		pixel = read_imagef(src_image, sampler, coord);
+
+		/* Acculumate weighted sum */
+		sum.xyz += pixel.xyz * TwoPassGaussianFilter[filter_index++];
+	}
+
+	/* Write new pixel value to output */
+	coord = (int2)(column, row);
+	write_imagef(dst_image, coord, sum);
+}
+
+__kernel void test_Task3c(__global float *input,
+	write_only image1d_t dst_image) {
+	int coord = get_global_id(0);
+	//float4 test = input[coord];
+	//float4 pixel = (float4) (input.x, input.y, input.z, ;
+	//printf("%f", input[coord]);
+
+	//write_imagef(dst_image, coord, pixel);
+}
+
+__kernel void combine_images(read_only image2d_t src_image1,
+	read_only image2d_t src_image2,
+	write_only image2d_t dst_image) {
+
+	/* Get work-item’s row and column position */
+	int2 coord = (int2)(get_global_id(0), get_global_id(1));
+
+	/* Read pixel value */
+	float4 originalPixel = read_imagef(src_image1, sampler, coord);
+	float4 modifiedPixel = read_imagef(src_image2, sampler, coord);
+	float4 sum = (float4)(0.0);
+
+	sum.xyz += originalPixel.xyz;
+	sum.xyz += modifiedPixel.xyz;
+
 	write_imagef(dst_image, coord, sum);
 }
